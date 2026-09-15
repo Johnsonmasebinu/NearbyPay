@@ -4,7 +4,7 @@
     "slug": "NearbyPay",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo/logo_bg.png",
     "scheme": "nearbypay",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -29,10 +29,11 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo/logo_bg.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

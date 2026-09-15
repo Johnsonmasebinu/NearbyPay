@@ -1,18 +1,81 @@
+import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, useFonts } from '@expo-google-fonts/montserrat';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
+import { ForgotPasswordScreen } from '@/components/auth/forgot-password-screen';
+import { LoginScreen } from '@/components/auth/login-screen';
+import { SignupScreen } from '@/components/auth/signup-screen';
+import { Onboarding } from '@/components/onboarding';
+import { ToastProvider } from '@/components/ui/toast';
 
 SplashScreen.preventAutoHideAsync();
 
+type AuthView = 'login' | 'signup' | 'forgot-password';
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authView, setAuthView] = useState<AuthView>('login');
+
+  const [fontsLoaded] = useFonts({
+    Montserrat_400Regular,
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  const renderAuthScreen = () => {
+    if (authView === 'signup') {
+      return (
+        <SignupScreen
+          onCreateAccount={() => {
+            setAuthView('login');
+            setIsAuthenticated(true);
+          }}
+          onGoToLogin={() => setAuthView('login')}
+        />
+      );
+    }
+
+    if (authView === 'forgot-password') {
+      return (
+        <ForgotPasswordScreen
+          onResetPassword={() => setAuthView('login')}
+          onBackToLogin={() => setAuthView('login')}
+        />
+      );
+    }
+
+    return (
+      <LoginScreen
+        onLogin={() => setIsAuthenticated(true)}
+        onGoToSignup={() => setAuthView('signup')}
+        onForgotPassword={() => setAuthView('forgot-password')}
+      />
+    );
+  };
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+      <ToastProvider>
+        <AnimatedSplashOverlay />
+        {showOnboarding ? (
+          <Onboarding onFinish={() => setShowOnboarding(false)} />
+        ) : isAuthenticated ? (
+          <AppTabs />
+        ) : (
+          renderAuthScreen()
+        )}
+      </ToastProvider>
     </ThemeProvider>
   );
 }

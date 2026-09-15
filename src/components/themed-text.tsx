@@ -32,29 +32,29 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 
 const styles = StyleSheet.create({
   small: {
+    fontFamily: 'Montserrat_500Medium',
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: 500,
   },
   smallBold: {
+    fontFamily: 'Montserrat_700Bold',
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: 700,
   },
   default: {
+    fontFamily: 'Montserrat_500Medium',
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: 500,
   },
   title: {
+    fontFamily: 'Montserrat_600SemiBold',
     fontSize: 48,
-    fontWeight: 600,
     lineHeight: 52,
   },
   subtitle: {
+    fontFamily: 'Montserrat_600SemiBold',
     fontSize: 32,
     lineHeight: 44,
-    fontWeight: 600,
   },
   link: {
     lineHeight: 30,
