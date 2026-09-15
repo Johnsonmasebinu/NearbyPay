@@ -2,8 +2,6 @@
 
 > **Send. Receive. Stay Close.** — a mobile-first payments app that makes sending money to the people around you as easy as a tap.
 
-Built for **[Hackathon Name]** 🔥
-
 ---
 
 ## 📖 About The Project
@@ -106,7 +104,7 @@ NearbyPay/
 
 ## 👥 Team
 
-Built with ❤️ by the NearbyPay team for **[Hackathon Name]**.
+Built with ❤️ by the NearbyPay team.
 
 ## 📄 License
 
