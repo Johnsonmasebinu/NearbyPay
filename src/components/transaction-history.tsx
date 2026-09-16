@@ -26,7 +26,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useToast } from '@/components/ui/toast';
@@ -199,7 +199,7 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <View style={styles.safeArea}>
       <StatusBar style="dark" />
 
       <View style={styles.container}>
@@ -433,7 +433,7 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
           )}
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -678,6 +678,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(10, 30, 60, 0.45)',
     justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    flex: 1,
   },
   sheet: {
     backgroundColor: '#FFFFFF',

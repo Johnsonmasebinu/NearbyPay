@@ -1,5 +1,4 @@
 import {
-    AddIcon,
     ArrowRight01Icon,
     Clock01Icon,
     Download01Icon,
@@ -12,10 +11,11 @@ import {
     UserIcon,
     ViewIcon,
     ViewOffSlashIcon,
+    Wallet03Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
     Animated,
     Easing,
@@ -33,8 +33,12 @@ import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { useToast } from '@/components/ui/toast';
 import TransactionHistoryScreen from '@/components/transaction-history';
+import WalletScreen from '@/components/wallet-screen';
+import ProfileScreen from '@/components/profile-screen';
+import { useAppTheme } from '@/hooks/theme-provider';
+import { Colors, type ThemeColors } from '@/constants/theme';
 
-type TabKey = 'home' | 'receive' | 'history' | 'profile';
+type TabKey = 'home' | 'wallet' | 'history' | 'profile';
 
 type StarSpec = {
   id: number;
@@ -147,6 +151,8 @@ function TwinklingStar({ star }: { star: StarSpec }) {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { show } = useToast();
+  const { colors, isDark } = useAppTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>('home');  const [starPositions, setStarPositions] = useState<StarSpec[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -181,7 +187,7 @@ export default function HomeScreen() {
 
   const navTabs: { id: TabKey; label: string; icon: typeof Home01Icon }[] = [
     { id: 'home', label: 'Home', icon: Home01Icon },
-    { id: 'receive', label: 'Receive', icon: AddIcon },
+    { id: 'wallet', label: 'Wallet', icon: Wallet03Icon },
     { id: 'history', label: 'History', icon: Clock01Icon },
     { id: 'profile', label: 'Profile', icon: UserIcon },
   ];
@@ -197,7 +203,7 @@ export default function HomeScreen() {
         <HugeiconsIcon
           icon={icon}
           size={isActive ? 18 : 20}
-          color={isActive ? '#FFFFFF' : '#627694'}
+          color={isActive ? '#FFFFFF' : colors.navIcon}
         />
         <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{label}</Text>
       </TouchableOpacity>
@@ -206,11 +212,15 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
 
       <View style={styles.container}>
         {activeTab === 'history' ? (
           <TransactionHistoryScreen onBack={() => setActiveTab('home')} />
+        ) : activeTab === 'wallet' ? (
+          <WalletScreen />
+        ) : activeTab === 'profile' ? (
+          <ProfileScreen />
         ) : (
         <ScrollView
           style={styles.scrollView}
@@ -220,9 +230,9 @@ export default function HomeScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor="#1E44F8"
-              colors={['#1E44F8']}
-              progressBackgroundColor="#FFFFFF"
+              tintColor={colors.brand}
+              colors={[colors.brand]}
+              progressBackgroundColor={colors.refreshBg}
             />
           }>
           {/* Header Bar */}
@@ -246,19 +256,14 @@ export default function HomeScreen() {
                     variant: 'info',
                   })
                 }>
-                <HugeiconsIcon icon={Notification03Icon} size={18} color="#0B1B3A" />
+                <HugeiconsIcon icon={Notification03Icon} size={18} color={colors.text} />
                 <View style={styles.notificationDot} />
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.avatarButton}
                 activeOpacity={0.8}
-                onPress={() =>
-                  show({
-                    message: 'Viewing profile details: Chinedu Okafor',
-                    variant: 'info',
-                  })
-                }>
+                onPress={() => setActiveTab('profile')}>
                 <Image
                   source={{ uri: 'https://cdn.jsdelivr.net/gh/alohe/avatars/png/memo_23.png' }}
                   style={styles.avatarImage}
@@ -326,7 +331,7 @@ export default function HomeScreen() {
                 activeOpacity={0.6}
                 onPress={() => handleActionPress(action.label)}>
                 <View style={styles.actionIconWrap}>
-                  <HugeiconsIcon icon={action.icon} size={18} color="#2146EB" />
+                  <HugeiconsIcon icon={action.icon} size={18} color={colors.brandSoft} />
                 </View>
                 <Text style={styles.actionLabel}>{action.label}</Text>
               </TouchableOpacity>
@@ -451,17 +456,18 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#EEF3FC',
+    backgroundColor: c.background,
   },
   container: {
     flex: 1,
     width: '100%',
     maxWidth: 440,
     alignSelf: 'center',
-    backgroundColor: '#EEF3FC',
+    backgroundColor: c.background,
   },
   scrollView: {
     flex: 1,
@@ -489,7 +495,7 @@ const styles = StyleSheet.create({
   brandTitle: {
     fontFamily: 'Montserrat_700Bold',
     fontSize: 20,
-    color: '#0A1E3C',
+    color: c.text,
     letterSpacing: -0.5,
   },
   headerActions: {
@@ -501,9 +507,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: c.surfaceBorder,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -542,8 +548,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#CBD5E1',
+    borderColor: c.surface,
+    backgroundColor: c.backgroundSelected,
     ...Platform.select({
       ios: {
         shadowColor: '#0A2045',
@@ -573,7 +579,7 @@ const styles = StyleSheet.create({
   greetingSub: {
     fontFamily: 'Montserrat_500Medium',
     fontSize: 14,
-    color: '#4A5E78',
+    color: c.textSecondary,
   },
   nameRow: {
     flexDirection: 'row',
@@ -584,7 +590,7 @@ const styles = StyleSheet.create({
   userName: {
     fontFamily: 'Montserrat_700Bold',
     fontSize: 21,
-    color: '#0A1E3C',
+    color: c.text,
     letterSpacing: -0.5,
   },
   verifiedBadge: {
@@ -598,7 +604,7 @@ const styles = StyleSheet.create({
   tagline: {
     fontFamily: 'Montserrat_500Medium',
     fontSize: 12,
-    color: '#5A6F8A',
+    color: c.textSecondary,
     marginTop: 3,
   },
   balanceCard: {
@@ -664,11 +670,11 @@ const styles = StyleSheet.create({
   actionStrip: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: c.surface,
     borderRadius: 20,
     marginTop: 14,
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.6)',
+    borderColor: c.surfaceBorder,
     ...Platform.select({
       ios: {
         shadowColor: '#0A2045',
@@ -695,7 +701,7 @@ const styles = StyleSheet.create({
   },
   actionItemDivided: {
     borderLeftWidth: 1,
-    borderLeftColor: 'rgba(226, 232, 240, 0.7)',
+    borderLeftColor: c.surfaceBorder,
   },
   actionIconWrap: {
     width: 34,
@@ -707,7 +713,7 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontFamily: 'Montserrat_600SemiBold',
     fontSize: 10,
-    color: '#0A1E3C',
+    color: c.text,
   },
   promoCard: {
     borderRadius: 18,
@@ -798,13 +804,13 @@ const styles = StyleSheet.create({
   transactionsTitle: {
     fontFamily: 'Montserrat_700Bold',
     fontSize: 16,
-    color: '#0A1E3C',
+    color: c.text,
     letterSpacing: -0.3,
   },
   seeAllText: {
     fontFamily: 'Montserrat_600SemiBold',
     fontSize: 11,
-    color: '#4F46E5',
+    color: c.accent,
   },
   transactionsList: {
     marginTop: 2,
@@ -814,7 +820,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 11,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(203, 213, 225, 0.45)',
+    borderBottomColor: c.divider,
   },
   lastTransactionItem: {
     borderBottomWidth: 0,
@@ -832,12 +838,12 @@ const styles = StyleSheet.create({
   txTitle: {
     fontFamily: 'Montserrat_600SemiBold',
     fontSize: 12,
-    color: '#0A1E3C',
+    color: c.text,
   },
   txDate: {
     fontFamily: 'Montserrat_400Regular',
     fontSize: 10,
-    color: '#64748B',
+    color: c.textMuted,
     marginTop: 2,
   },
   txAmount: {
@@ -851,9 +857,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: c.surface,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(226, 232, 240, 0.7)',
+    borderTopColor: c.surfaceBorder,
     paddingTop: 8,
     paddingHorizontal: 10,
     ...Platform.select({
@@ -888,7 +894,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: '#EEF3FC',
+    borderColor: c.background,
     ...Platform.select({
       ios: {
         shadowColor: '#1E44F8',
@@ -934,7 +940,7 @@ const styles = StyleSheet.create({
   navLabel: {
     fontFamily: 'Montserrat_500Medium',
     fontSize: 9,
-    color: '#627694',
+    color: c.navIcon,
   },
   navLabelActive: {
     fontFamily: 'Montserrat_600SemiBold',
