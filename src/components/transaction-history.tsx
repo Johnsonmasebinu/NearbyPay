@@ -27,11 +27,12 @@ import {
     View,
     useColorScheme,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useToast } from '@/components/ui/toast';
 import { getAppTheme } from '@/constants/app-theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type TxType = 'sent' | 'received';
 
@@ -205,6 +206,7 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: t.pageBg }]} edges={['top']}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+
 
       <View style={[styles.container, { backgroundColor: t.pageBg }]}>
         {/* Header */}
@@ -696,11 +698,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalBackdrop: {
+<<<<<<< HEAD
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+=======
+    flex: 1,
+>>>>>>> 50b4c8bbb2a58c83c6214c6a91d016b2c0f98aa4
   },
   sheet: {
     backgroundColor: '#FFFFFF',

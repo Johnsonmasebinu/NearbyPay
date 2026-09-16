@@ -13,10 +13,10 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
-    useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAppTheme } from '@/hooks/theme-provider';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
@@ -27,8 +27,7 @@ interface LoginScreenProps {
 }
 
 export function LoginScreen({ onLogin, onGoToSignup, onForgotPassword }: LoginScreenProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

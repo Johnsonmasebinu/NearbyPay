@@ -2,13 +2,13 @@ import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Mo
 import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { ForgotPasswordScreen } from '@/components/auth/forgot-password-screen';
 import { LoginScreen } from '@/components/auth/login-screen';
 import { SignupScreen } from '@/components/auth/signup-screen';
 import { Onboarding } from '@/components/onboarding';
+import { ThemeModeProvider, useAppTheme } from '@/hooks/theme-provider';
 import { ToastProvider } from '@/components/ui/toast';
 
 SplashScreen.preventAutoHideAsync();
@@ -16,7 +16,15 @@ SplashScreen.preventAutoHideAsync();
 type AuthView = 'login' | 'signup' | 'forgot-password';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  return (
+    <ThemeModeProvider>
+      <RootShell />
+    </ThemeModeProvider>
+  );
+}
+
+function RootShell() {
+  const { isDark } = useAppTheme();
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authView, setAuthView] = useState<AuthView>('login');
@@ -64,7 +72,7 @@ export default function TabLayout() {
   };
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <ToastProvider>
         <AnimatedSplashOverlay />
         {showOnboarding ? (

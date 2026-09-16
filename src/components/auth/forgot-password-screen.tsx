@@ -13,10 +13,10 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
-    useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAppTheme } from '@/hooks/theme-provider';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
@@ -26,8 +26,7 @@ interface ForgotPasswordScreenProps {
 }
 
 export function ForgotPasswordScreen({ onResetPassword, onBackToLogin }: ForgotPasswordScreenProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useAppTheme();
   const [email, setEmail] = useState('');
   const [focused, setFocused] = useState(false);
 
