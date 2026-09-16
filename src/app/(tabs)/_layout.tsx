@@ -7,7 +7,7 @@ const VALID_TABS: MainTabKey[] = ['home', 'receive', 'send', 'history', 'profile
 export default function TabsLayout() {
   return (
     <Tabs
-      screenOptions={{ headerShown: false }}
+      screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true }}
       tabBar={({ state, navigation }) => {
         const routeName = state.routes[state.index]?.name ?? 'home';
         const active: MainTabKey = (VALID_TABS.includes(routeName as MainTabKey)

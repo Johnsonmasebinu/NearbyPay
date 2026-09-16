@@ -1,7 +1,9 @@
 import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, useFonts } from '@expo-google-fonts/montserrat';
 import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
+import { NavigationBar } from 'expo-navigation-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
+import { Platform } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { ForgotPasswordScreen } from '@/components/auth/forgot-password-screen';
@@ -73,6 +75,7 @@ function RootShell() {
 
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      {Platform.OS === 'android' && <NavigationBar style={isDark ? 'dark' : 'light'} />}
       <ToastProvider>
         <AnimatedSplashOverlay />
         {showOnboarding ? (
