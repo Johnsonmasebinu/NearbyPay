@@ -25,11 +25,13 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useToast } from '@/components/ui/toast';
+import { getAppTheme } from '@/constants/app-theme';
 
 type TxType = 'sent' | 'received';
 
@@ -159,6 +161,8 @@ const FILTERS: { id: FilterKey; label: string }[] = [
 
 export default function TransactionHistoryScreen({ onBack }: { onBack: () => void }) {
   const { show } = useToast();
+  const isDark = useColorScheme() === 'dark';
+  const t = getAppTheme(isDark);
   const [filter, setFilter] = useState<FilterKey>('all');
   const [query, setQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -199,16 +203,19 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: t.pageBg }]} edges={['top']}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: t.pageBg }]}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} activeOpacity={0.7} onPress={onBack}>
-            <HugeiconsIcon icon={ArrowLeft01Icon} size={18} color="#0B1B3A" />
+          <TouchableOpacity
+            style={[styles.backButton, { backgroundColor: t.cardBg, borderColor: t.cardBorder }]}
+            activeOpacity={0.7}
+            onPress={onBack}>
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={18} color={t.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Transaction History</Text>
+          <Text style={[styles.headerTitle, { color: t.textPrimary }]}>Transaction History</Text>
           <View style={styles.headerSpacer} />
         </View>
 
@@ -223,7 +230,7 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
               onRefresh={handleRefresh}
               tintColor="#1E44F8"
               colors={['#1E44F8']}
-              progressBackgroundColor="#FFFFFF"
+              progressBackgroundColor={t.cardBg}
             />
           }>
           {/* Summary Card */}
@@ -253,28 +260,28 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
 
           {/* Search + Filter */}
           <View style={styles.searchRow}>
-            <View style={styles.searchBox}>
-              <HugeiconsIcon icon={Search01Icon} size={15} color="#627694" />
+            <View style={[styles.searchBox, { backgroundColor: t.cardBg, borderColor: t.cardBorder }]}>
+              <HugeiconsIcon icon={Search01Icon} size={15} color={t.iconColor} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: t.textPrimary }]}
                 placeholder="Search transactions"
-                placeholderTextColor="#8896AC"
+                placeholderTextColor={t.muted}
                 value={query}
                 onChangeText={setQuery}
               />
               {query.length > 0 && (
                 <TouchableOpacity onPress={() => setQuery('')} activeOpacity={0.6}>
-                  <HugeiconsIcon icon={Cancel01Icon} size={14} color="#8896AC" />
+                  <HugeiconsIcon icon={Cancel01Icon} size={14} color={t.muted} />
                 </TouchableOpacity>
               )}
             </View>
             <TouchableOpacity
-              style={styles.filterButton}
+              style={[styles.filterButton, { backgroundColor: t.cardBg, borderColor: t.cardBorder }]}
               activeOpacity={0.7}
               onPress={() =>
                 show({ message: 'Date range filter coming soon', variant: 'info' })
               }>
-              <HugeiconsIcon icon={FilterHorizontalIcon} size={15} color="#0B1B3A" />
+              <HugeiconsIcon icon={FilterHorizontalIcon} size={15} color={t.textPrimary} />
             </TouchableOpacity>
           </View>
 
@@ -285,10 +292,19 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
               return (
                 <TouchableOpacity
                   key={f.id}
-                  style={[styles.chip, isActive && styles.chipActive]}
+                  style={[
+                    styles.chip,
+                    { backgroundColor: t.cardBg, borderColor: t.cardBorder },
+                    isActive && styles.chipActive,
+                  ]}
                   activeOpacity={0.7}
                   onPress={() => setFilter(f.id)}>
-                  <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: t.textSecondary },
+                      isActive && styles.chipTextActive,
+                    ]}>
                     {f.label}
                   </Text>
                 </TouchableOpacity>
@@ -299,20 +315,20 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
           {/* Grouped Transactions */}
           {groups.length === 0 ? (
             <View style={styles.emptyState}>
-              <View style={styles.emptyIconWrap}>
-                <HugeiconsIcon icon={Calendar03Icon} size={22} color="#8896AC" />
+              <View style={[styles.emptyIconWrap, { backgroundColor: t.cardBg, borderColor: t.cardBorder }]}>
+                <HugeiconsIcon icon={Calendar03Icon} size={22} color={t.muted} />
               </View>
-              <Text style={styles.emptyTitle}>No transactions found</Text>
-              <Text style={styles.emptySubtitle}>Try a different search or filter</Text>
+              <Text style={[styles.emptyTitle, { color: t.textPrimary }]}>No transactions found</Text>
+              <Text style={[styles.emptySubtitle, { color: t.textSecondary }]}>Try a different search or filter</Text>
             </View>
           ) : (
             groups.map(([day, txs]) => (
               <View key={day} style={styles.daySection}>
-                <Text style={styles.dayLabel}>{day}</Text>
+                <Text style={[styles.dayLabel, { color: t.textSecondary }]}>{day}</Text>
                 {txs.map((tx) => (
                   <TouchableOpacity
                     key={tx.id}
-                    style={styles.txRow}
+                    style={[styles.txRow, { borderBottomColor: t.cardBorder }]}
                     activeOpacity={0.6}
                     onPress={() => setSelectedTx(tx)}>
                     <View style={styles.txIconWrap}>
@@ -320,8 +336,8 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
                     </View>
 
                     <View style={styles.txInfo}>
-                      <Text style={styles.txTitle}>{tx.title}</Text>
-                      <Text style={styles.txMeta}>
+                      <Text style={[styles.txTitle, { color: t.textPrimary }]}>{tx.title}</Text>
+                      <Text style={[styles.txMeta, { color: t.textSecondary }]}>
                         {tx.category} · {tx.date}
                       </Text>
                     </View>
@@ -355,11 +371,11 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
         <View style={styles.modalOverlay}>
           <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setSelectedTx(null)} />
           {selectedTx && (
-            <View style={styles.sheet}>
-              <View style={styles.sheetHandle} />
+            <View style={[styles.sheet, { backgroundColor: t.cardBg }]}>
+              <View style={[styles.sheetHandle, { backgroundColor: t.cardBorder }]} />
 
               <View style={styles.sheetHeader}>
-                <View style={styles.sheetIconWrap}>
+                <View style={[styles.sheetIconWrap, { backgroundColor: t.pageBg }]}>
                   <HugeiconsIcon
                     icon={selectedTx.icon}
                     size={22}
@@ -367,14 +383,14 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
                   />
                 </View>
                 <View style={styles.sheetHeaderText}>
-                  <Text style={styles.sheetName}>{selectedTx.title}</Text>
-                  <Text style={styles.sheetCategory}>{selectedTx.channel}</Text>
+                  <Text style={[styles.sheetName, { color: t.textPrimary }]}>{selectedTx.title}</Text>
+                  <Text style={[styles.sheetCategory, { color: t.textSecondary }]}>{selectedTx.channel}</Text>
                 </View>
                 <TouchableOpacity
-                  style={styles.sheetClose}
+                  style={[styles.sheetClose, { backgroundColor: t.pageBg }]}
                   activeOpacity={0.7}
                   onPress={() => setSelectedTx(null)}>
-                  <HugeiconsIcon icon={Cancel01Icon} size={16} color="#627694" />
+                  <HugeiconsIcon icon={Cancel01Icon} size={16} color={t.iconColor} />
                 </TouchableOpacity>
               </View>
 
@@ -386,9 +402,9 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
                 {selectedTx.amount}
               </Text>
 
-              <View style={styles.sheetDetails}>
-                <View style={styles.sheetDetailRow}>
-                  <Text style={styles.sheetDetailLabel}>Status</Text>
+              <View style={[styles.sheetDetails, { backgroundColor: t.inputBg, borderColor: t.cardBorder }]}>
+                <View style={[styles.sheetDetailRow, { borderBottomColor: t.cardBorder }]}>
+                  <Text style={[styles.sheetDetailLabel, { color: t.textSecondary }]}>Status</Text>
                   <View style={styles.sheetStatusWrap}>
                     <View
                       style={[
@@ -399,20 +415,20 @@ export default function TransactionHistoryScreen({ onBack }: { onBack: () => voi
                         },
                       ]}
                     />
-                    <Text style={styles.sheetDetailValue}>{selectedTx.status}</Text>
+                    <Text style={[styles.sheetDetailValue, { color: t.textPrimary }]}>{selectedTx.status}</Text>
                   </View>
                 </View>
-                <View style={styles.sheetDetailRow}>
-                  <Text style={styles.sheetDetailLabel}>Date</Text>
-                  <Text style={styles.sheetDetailValue}>{selectedTx.date}</Text>
+                <View style={[styles.sheetDetailRow, { borderBottomColor: t.cardBorder }]}>
+                  <Text style={[styles.sheetDetailLabel, { color: t.textSecondary }]}>Date</Text>
+                  <Text style={[styles.sheetDetailValue, { color: t.textPrimary }]}>{selectedTx.date}</Text>
                 </View>
-                <View style={styles.sheetDetailRow}>
-                  <Text style={styles.sheetDetailLabel}>Channel</Text>
-                  <Text style={styles.sheetDetailValue}>{selectedTx.channel}</Text>
+                <View style={[styles.sheetDetailRow, { borderBottomColor: t.cardBorder }]}>
+                  <Text style={[styles.sheetDetailLabel, { color: t.textSecondary }]}>Channel</Text>
+                  <Text style={[styles.sheetDetailValue, { color: t.textPrimary }]}>{selectedTx.channel}</Text>
                 </View>
                 <View style={[styles.sheetDetailRow, styles.sheetDetailRowLast]}>
-                  <Text style={styles.sheetDetailLabel}>Reference</Text>
-                  <Text style={styles.sheetDetailValue}>{selectedTx.reference}</Text>
+                  <Text style={[styles.sheetDetailLabel, { color: t.textSecondary }]}>Reference</Text>
+                  <Text style={[styles.sheetDetailValue, { color: t.textPrimary }]}>{selectedTx.reference}</Text>
                 </View>
               </View>
 
@@ -678,6 +694,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(10, 30, 60, 0.45)',
     justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   sheet: {
     backgroundColor: '#FFFFFF',

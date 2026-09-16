@@ -1,11 +1,10 @@
 import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, useFonts } from '@expo-google-fonts/montserrat';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
 import { ForgotPasswordScreen } from '@/components/auth/forgot-password-screen';
 import { LoginScreen } from '@/components/auth/login-screen';
 import { SignupScreen } from '@/components/auth/signup-screen';
@@ -71,7 +70,10 @@ export default function TabLayout() {
         {showOnboarding ? (
           <Onboarding onFinish={() => setShowOnboarding(false)} />
         ) : isAuthenticated ? (
-          <AppTabs />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="index" />
+          </Stack>
         ) : (
           renderAuthScreen()
         )}
