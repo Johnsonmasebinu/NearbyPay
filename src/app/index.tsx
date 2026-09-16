@@ -35,6 +35,8 @@ import { useToast } from '@/components/ui/toast';
 import TransactionHistoryScreen from '@/components/transaction-history';
 import WalletScreen from '@/components/wallet-screen';
 import ProfileScreen from '@/components/profile-screen';
+import SendScreen from '@/components/send-screen';
+import ReceiveScreen from '@/components/receive-screen';
 import { useAppTheme } from '@/hooks/theme-provider';
 import { Colors, type ThemeColors } from '@/constants/theme';
 
@@ -154,7 +156,8 @@ export default function HomeScreen() {
   const { colors, isDark } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabKey>('home');  const [starPositions, setStarPositions] = useState<StarSpec[]>([]);
+  const [activeTab, setActiveTab] = useState<TabKey>('home');
+  const [overlay, setOverlay] = useState<'send' | 'receive' | null>(null);  const [starPositions, setStarPositions] = useState<StarSpec[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = () => {
@@ -179,6 +182,18 @@ export default function HomeScreen() {
   }, []);
 
   const handleActionPress = (action: string) => {
+    if (action === 'Send') {
+      setOverlay('send');
+      return;
+    }
+    if (action === 'Receive') {
+      setOverlay('receive');
+      return;
+    }
+    if (action === 'History') {
+      setActiveTab('history');
+      return;
+    }
     show({
       message: `${action} feature opened.`,
       variant: 'info',
@@ -437,7 +452,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.fab}
             activeOpacity={0.85}
-            onPress={() => handleActionPress('Send')}>
+            onPress={() => setOverlay('send')}>
             <Svg style={StyleSheet.absoluteFill}>
               <Defs>
                 <LinearGradient id="fabGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -451,6 +466,17 @@ export default function HomeScreen() {
             <HugeiconsIcon icon={Sent02Icon} size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
+
+        {overlay === 'send' && (
+          <View style={StyleSheet.absoluteFill}>
+            <SendScreen onClose={() => setOverlay(null)} />
+          </View>
+        )}
+        {overlay === 'receive' && (
+          <View style={StyleSheet.absoluteFill}>
+            <ReceiveScreen onClose={() => setOverlay(null)} />
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );

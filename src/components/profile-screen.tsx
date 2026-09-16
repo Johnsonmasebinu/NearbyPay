@@ -1,4 +1,5 @@
 import {
+  ArrowLeft01Icon,
   ArrowRight01Icon,
   DocumentValidationIcon,
   HelpCircleIcon,
@@ -70,6 +71,7 @@ export default function ProfileScreen() {
   const styles = createStyles(colors);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [faceIdEnabled, setFaceIdEnabled] = useState(true);
+  const [showAbout, setShowAbout] = useState(false);
 
   const appearanceOptions: { value: ThemeMode; label: string; icon: IconSvgElement }[] = [
     { value: 'light', label: 'Light', icon: Sun03Icon },
@@ -78,6 +80,10 @@ export default function ProfileScreen() {
   ];
 
   const handleRowPress = (row: SettingsRow) => {
+    if (row.id === 'about') {
+      setShowAbout(true);
+      return;
+    }
     show({ message: `${row.label} coming soon.`, variant: 'info' });
   };
 
@@ -97,6 +103,101 @@ export default function ProfileScreen() {
       )}
     </TouchableOpacity>
   );
+
+  if (showAbout) {
+    return (
+      <View style={styles.safeArea}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <View style={styles.container}>
+          <View style={styles.aboutTopBar}>
+            <TouchableOpacity
+              style={styles.backButton}
+              activeOpacity={0.7}
+              onPress={() => setShowAbout(false)}>
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={16} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.aboutTitle}>About NearbyPay</Text>
+            <View style={styles.backButton} />
+          </View>
+
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.aboutContent}
+            showsVerticalScrollIndicator={false}>
+            <Image
+              source={require('@/assets/images/logo/logo.png')}
+              style={styles.aboutLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.aboutAppName}>NearbyPay</Text>
+            <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+
+            <View style={styles.aboutSectionCard}>
+              <Text style={styles.aboutSectionTitle}>Our Mission</Text>
+              <Text style={styles.aboutBody}>
+                NearbyPay makes paying merchants effortless. Send money
+                directly from your account to any merchant near you — even
+                when you are offline. Only the merchant needs to be online to
+                receive payments, so you can pay anytime, anywhere, without
+                worrying about your connection.
+              </Text>
+            </View>
+
+            <View style={styles.aboutSectionCard}>
+              <Text style={styles.aboutSectionTitle}>How It Works</Text>
+              <View style={styles.aboutFeatureRow}>
+                <View style={styles.aboutFeatureDot} />
+                <Text style={styles.aboutBody}>
+                  Transfer money from your user account to nearby merchants
+                </Text>
+              </View>
+              <View style={styles.aboutFeatureRow}>
+                <View style={styles.aboutFeatureDot} />
+                <Text style={styles.aboutBody}>
+                  Merchants stay online to receive payments in real time
+                </Text>
+              </View>
+              <View style={styles.aboutFeatureRow}>
+                <View style={styles.aboutFeatureDot} />
+                <Text style={styles.aboutBody}>
+                  No internet? No problem — you can pay while offline
+                </Text>
+              </View>
+              <View style={styles.aboutFeatureRow}>
+                <View style={styles.aboutFeatureDot} />
+                <Text style={styles.aboutBody}>
+                  Earn commission points on every transaction
+                </Text>
+              </View>
+            </View>
+
+            <View style={[styles.aboutSectionCard, styles.aboutCreditCard]}>
+              <Text style={styles.aboutCreditLabel}>Hackathon Project</Text>
+              <Text style={styles.aboutBody}>
+                Built with dedication during a hackathon by:
+              </Text>
+              <View style={styles.aboutCreditRow}>
+                <Text style={styles.aboutCreditName}>Johnson Masebinu</Text>
+                <Text style={styles.aboutCreditName}>Onukwu Ifeanyichukwu Boluwatife</Text>
+              </View>
+            </View>
+
+            <View style={styles.aboutSectionCard}>
+              <Text style={styles.aboutSectionTitle}>Contact</Text>
+              <Text style={styles.aboutBody}>
+                Questions or feedback? We would love to hear from you at
+                support@nearbypay.com
+              </Text>
+            </View>
+
+            <Text style={styles.aboutFooter}>
+              © 2026 NearbyPay. All rights reserved.
+            </Text>
+          </ScrollView>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.safeArea}>
@@ -483,5 +584,119 @@ const createStyles = (c: ThemeColors) =>
       color: c.textMuted,
       textAlign: 'center',
       marginTop: 14,
+    },
+    aboutTopBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 10,
+    },
+    aboutTitle: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 16,
+      color: c.text,
+      letterSpacing: -0.3,
+    },
+    backButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 12,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.surfaceBorder,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    aboutContent: {
+      alignItems: 'center',
+      paddingHorizontal: 24,
+      paddingTop: 24,
+      paddingBottom: 40,
+    },
+    aboutLogo: {
+      width: 72,
+      height: 72,
+    },
+    aboutAppName: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 22,
+      color: c.text,
+      letterSpacing: -0.5,
+      marginTop: 12,
+    },
+    aboutVersion: {
+      fontFamily: 'Montserrat_500Medium',
+      fontSize: 11,
+      color: c.textMuted,
+      marginTop: 3,
+    },
+    aboutSectionCard: {
+      alignSelf: 'stretch',
+      backgroundColor: c.surface,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: c.surfaceBorder,
+      padding: 16,
+      marginTop: 12,
+    },
+    aboutSectionTitle: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 13,
+      color: c.text,
+      letterSpacing: -0.2,
+      marginBottom: 8,
+    },
+    aboutBody: {
+      fontFamily: 'Montserrat_400Regular',
+      fontSize: 12,
+      color: c.textSecondary,
+      lineHeight: 19,
+      flex: 1,
+    },
+    aboutFeatureRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+      marginTop: 8,
+    },
+    aboutFeatureDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: c.brand,
+      marginTop: 6,
+    },
+    aboutCreditCard: {
+      alignItems: 'center',
+      paddingVertical: 20,
+    },
+    aboutCreditLabel: {
+      fontFamily: 'Montserrat_600SemiBold',
+      fontSize: 10,
+      color: c.textMuted,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+    },
+    aboutCreditRow: {
+      alignSelf: 'stretch',
+      marginTop: 4,
+      gap: 4,
+    },
+    aboutCreditName: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 14,
+      color: c.text,
+      textAlign: 'center',
+      lineHeight: 21,
+    },
+    aboutFooter: {
+      fontFamily: 'Montserrat_400Regular',
+      fontSize: 10,
+      color: c.textMuted,
+      marginTop: 24,
+      textAlign: 'center',
     },
   });
