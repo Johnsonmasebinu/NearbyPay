@@ -38,6 +38,7 @@ import ProfileScreen from '@/components/profile-screen';
 import SendScreen from '@/components/send-screen';
 import ReceiveScreen from '@/components/receive-screen';
 import MoreScreen from '@/components/more-screen';
+import BottomSheet from '@/components/ui/bottom-sheet';
 import { useAppTheme } from '@/hooks/theme-provider';
 import { Colors, type ThemeColors } from '@/constants/theme';
 
@@ -158,7 +159,8 @@ export default function HomeScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>('home');
-  const [overlay, setOverlay] = useState<'send' | 'receive' | 'more' | null>(null);  const [starPositions, setStarPositions] = useState<StarSpec[]>([]);
+  const [overlay, setOverlay] = useState<'send' | 'receive' | 'more' | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);  const [starPositions, setStarPositions] = useState<StarSpec[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = () => {
@@ -387,12 +389,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 style={styles.promoButton}
                 activeOpacity={0.8}
-                onPress={() =>
-                  show({
-                    message: 'Discover NearbyPay social transfers & split pay',
-                    variant: 'info',
-                  })
-                }>
+                onPress={() => setSheetOpen(true)}>
                 <Text style={styles.promoButtonText}>Explore</Text>
                 <HugeiconsIcon icon={ArrowRight01Icon} size={12} color="#FFFFFF" />
               </TouchableOpacity>
@@ -487,6 +484,32 @@ export default function HomeScreen() {
             <MoreScreen onClose={() => setOverlay(null)} />
           </View>
         )}
+
+        <BottomSheet visible={sheetOpen} onClose={() => setSheetOpen(false)} title="What do you want to do today?">
+          {[
+            { id: 'send', label: 'Send money', subtitle: 'To merchants around you', icon: Sent02Icon },
+            { id: 'receive', label: 'Receive payment', subtitle: 'Share your QR or code', icon: Download01Icon },
+            { id: 'more', label: 'Airtime, Data & Bills', subtitle: 'Top-ups and subscriptions', icon: MoreHorizontalIcon },
+          ].map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={styles.sheetOption}
+              activeOpacity={0.7}
+              onPress={() => {
+                setSheetOpen(false);
+                setOverlay(option.id as 'send' | 'receive' | 'more');
+              }}>
+              <View style={styles.sheetOptionIcon}>
+                <HugeiconsIcon icon={option.icon} size={16} color={colors.brandSoft} />
+              </View>
+              <View style={styles.sheetOptionInfo}>
+                <Text style={styles.sheetOptionLabel}>{option.label}</Text>
+                <Text style={styles.sheetOptionSubtitle}>{option.subtitle}</Text>
+              </View>
+              <HugeiconsIcon icon={ArrowRight01Icon} size={14} color={colors.navIcon} />
+            </TouchableOpacity>
+          ))}
+        </BottomSheet>
       </View>
     </SafeAreaView>
   );
@@ -494,6 +517,37 @@ export default function HomeScreen() {
 
 const createStyles = (c: ThemeColors) =>
   StyleSheet.create({
+  sheetOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: c.divider,
+  },
+  sheetOptionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    backgroundColor: c.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetOptionInfo: {
+    flex: 1,
+  },
+  sheetOptionLabel: {
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 13,
+    color: c.text,
+  },
+  sheetOptionSubtitle: {
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 10,
+    color: c.textMuted,
+    marginTop: 2,
+  },
   safeArea: {
     flex: 1,
     backgroundColor: c.background,
