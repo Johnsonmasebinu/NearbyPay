@@ -2,6 +2,7 @@ import { LockPasswordIcon, Mail01Icon, ViewIcon, ViewOffSlashIcon } from '@hugei
 import { HugeiconsIcon } from '@hugeicons/react-native';
 import { useState } from 'react';
 import {
+    ImageBackground,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -18,7 +19,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAppTheme } from '@/hooks/theme-provider';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 
 interface LoginScreenProps {
   onLogin: () => void;
@@ -43,7 +43,11 @@ export function LoginScreen({ onLogin, onGoToSignup, onForgotPassword }: LoginSc
   const iconColor = isDark ? '#64748B' : '#94A3B8';
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: pageBg }]}>
+    <ImageBackground
+      source={require('@/assets/images/bg/bg.png')}
+      style={[styles.container, { backgroundColor: pageBg }]}
+      imageStyle={styles.bgImage}
+      resizeMode="cover">
       <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.safeArea}>
         <KeyboardAvoidingView
           style={styles.keyboardView}
@@ -174,11 +178,14 @@ export function LoginScreen({ onLogin, onGoToSignup, onForgotPassword }: LoginSc
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </ThemedView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+    bgImage: {
+      opacity: 0.55,
+    },
   container: {
     flex: 1,
   },
