@@ -2,6 +2,7 @@ import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
   Delete02Icon,
+  FlashIcon,
   Location01Icon,
   ScanIcon,
   Tick02Icon,
@@ -118,6 +119,7 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
   const [amount, setAmount] = useState('');
   const [phase, setPhase] = useState<SendPhase>('compose');
   const [showScanner, setShowScanner] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
   const [pin, setPin] = useState('');
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
 
@@ -608,7 +610,16 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
               <HugeiconsIcon icon={ArrowLeft01Icon} size={16} color="#FFFFFF" />
             </TouchableOpacity>
             <Text style={styles.scannerTitle}>Scan Merchant QR</Text>
-            <View style={styles.scannerIconButton} />
+            <TouchableOpacity
+              style={[styles.scannerIconButton, torchOn && styles.scannerIconButtonActive]}
+              activeOpacity={0.7}
+              onPress={() => setTorchOn((prev) => !prev)}>
+              <HugeiconsIcon
+                icon={FlashIcon}
+                size={15}
+                color={torchOn ? '#FBBF24' : '#FFFFFF'}
+              />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.scannerBody}>
@@ -1178,6 +1189,10 @@ const createStyles = (c: ThemeColors) =>
       borderColor: 'rgba(255, 255, 255, 0.25)',
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    scannerIconButtonActive: {
+      backgroundColor: 'rgba(251, 191, 36, 0.2)',
+      borderColor: 'rgba(251, 191, 36, 0.6)',
     },
     scannerBody: {
       flex: 1,
