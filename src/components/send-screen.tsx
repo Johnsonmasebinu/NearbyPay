@@ -124,6 +124,12 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
   const numericAmount = Number(amount.replace(/[^0-9]/g, ''));
   const canSend = selected !== null && numericAmount > 0;
 
+  const formatDigits = (value: string) => {
+    const digits = value.replace(/[^0-9]/g, '');
+    if (!digits) return '';
+    return Number(digits).toLocaleString();
+  };
+
   const formatAmount = (value: string) => {
     const digits = value.replace(/[^0-9]/g, '');
     if (!digits) return '';
@@ -283,7 +289,7 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
               <TextInput
                 style={styles.amountInput}
                 value={amount}
-                onChangeText={(text) => setAmount(formatAmount(text))}
+                onChangeText={(text) => setAmount(formatDigits(text))}
                 placeholder="0.00"
                 placeholderTextColor={colors.textMuted}
                 keyboardType="number-pad"
@@ -298,7 +304,7 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
                     numericAmount === quick && styles.quickAmountChipActive,
                   ]}
                   activeOpacity={0.7}
-                  onPress={() => setAmount(formatAmount(String(quick)))}>
+                  onPress={() => setAmount(formatDigits(String(quick)))}>
                   <Text
                     style={[
                       styles.quickAmountText,
