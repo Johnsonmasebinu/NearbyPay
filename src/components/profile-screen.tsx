@@ -19,6 +19,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import {
   Image,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -103,7 +104,10 @@ export default function ProfileScreen() {
       <View style={styles.container}>
         <Text style={styles.screenTitle}>Profile</Text>
 
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentInner}
+          showsVerticalScrollIndicator={false}>
           {/* Profile Header */}
           <View style={styles.profileCard}>
             <View style={styles.avatarWrap}>
@@ -240,7 +244,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           <Text style={styles.versionText}>NearbyPay v1.0.0</Text>
-        </View>
+        </ScrollView>
       </View>
     </View>
   );
@@ -256,6 +260,9 @@ const createStyles = (c: ThemeColors) =>
       flex: 1,
     },
     content: {
+      flex: 1,
+    },
+    contentInner: {
       paddingHorizontal: 16,
       paddingBottom: 40,
     },
