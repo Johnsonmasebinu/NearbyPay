@@ -24,6 +24,7 @@ import {
   View,
 } from 'react-native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/hooks/theme-provider';
 import type { ThemeColors } from '@/constants/theme';
 import { useToast } from '@/components/ui/toast';
@@ -40,24 +41,92 @@ const NEARBY_PEOPLE = [
 
 const QUICK_AMOUNTS = [500, 1000, 5000, 10000];
 
-type SendPhase = 'compose' | 'processing' | 'success';
+type SendPhase = 'compose' | 'pin' | 'processing' | 'success';
 
 type Person = (typeof NEARBY_PEOPLE)[number];
+
+type ConfettiPiece = {
+  id: number;
+  left: number;
+  size: number;
+  color: string;
+  duration: number;
+  delay: number;
+  drift: number;
+  rotate: number;
+};
+
+const CONFETTI_COLORS = ['#4B63F5', '#22C55E', '#FBBF24', '#F472B6', '#38BDF8', '#A78BFA'];
+
+function ConfettiPiece({ piece, screenHeight }: { piece: ConfettiPiece; screenHeight: number }) {
+  const progress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(piece.delay * 1000),
+        Animated.timing(progress, {
+          toValue: 1,
+          duration: piece.duration * 1000,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(progress, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [progress, piece]);
+
+  const translateY = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-40, screenHeight + 40],
+  });
+  const rotate = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [`0deg`, `${piece.rotate * 3}deg`],
+  });
+  const translateX = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, piece.drift],
+  });
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: `${piece.left}%`,
+        width: piece.size,
+        height: piece.size * 0.45,
+        borderRadius: 2,
+        backgroundColor: piece.color,
+        transform: [{ translateY }, { translateX }, { rotate }],
+      }}
+    />
+  );
+}
 
 export default function SendScreen({ onClose }: { onClose: () => void }) {
   const { colors, isDark } = useAppTheme();
   const { show } = useToast();
+  const insets = useSafeAreaInsets();
   const styles = createStyles(colors);
 
   const [selected, setSelected] = useState<Person | null>(null);
   const [amount, setAmount] = useState('');
   const [phase, setPhase] = useState<SendPhase>('compose');
   const [showScanner, setShowScanner] = useState(false);
+  const [pin, setPin] = useState('');
+  const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
 
   const entrance = useRef(new Animated.Value(0)).current;
   const scanLine = useRef(new Animated.Value(0)).current;
   const processingPulse = useRef(new Animated.Value(0)).current;
   const successScale = useRef(new Animated.Value(0)).current;
+  const splashRing = useRef(new Animated.Value(0)).current;
+  const splashEntrance = useRef(new Animated.Value(0)).current;
+  const pinShake = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(entrance, {
@@ -90,7 +159,8 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
   }, [showScanner, scanLine, show]);
 
   useEffect(() => {
-    if (phase === 'processing') {
+
+  if (phase === 'processing') {
       const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(processingPulse, { toValue: 1, duration: 650, useNativeDriver: true }),
@@ -108,14 +178,65 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
       };
     }
     if (phase === 'success') {
-      Animated.spring(successScale, {
-        toValue: 1,
-        friction: 4,
-        tension: 60,
-        useNativeDriver: true,
-      }).start();
+      const pieces: ConfettiPiece[] = [];
+      for (let i = 0; i < 20; i++) {
+        pieces.push({
+          id: i,
+          left: Math.random() * 94 + 2,
+          size: Math.random() * 6 + 6,
+          color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+          duration: Math.random() * 1.4 + 1.6,
+          delay: Math.random() * 0.5,
+          drift: Math.random() * 60 - 30,
+          rotate: Math.random() * 120 + 120,
+        });
+      }
+      setConfetti(pieces);
+
+      splashEntrance.setValue(0);
+      Animated.parallel([
+        Animated.spring(successScale, {
+          toValue: 1,
+          friction: 4,
+          tension: 60,
+          useNativeDriver: true,
+        }),
+        Animated.timing(splashEntrance, {
+          toValue: 1,
+          duration: 350,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+      Animated.loop(
+        Animated.timing(splashRing, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ).start();
     }
-  }, [phase, processingPulse, successScale, selected, show]);
+  }, [phase, processingPulse, successScale, selected, show, splashRing, splashEntrance]);
+
+  useEffect(() => {
+    if (phase === 'pin' && pin.length === 4) {
+      const timer = setTimeout(() => {
+        setPhase('processing');
+        setPin('');
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, pin]);
+
+  const shakePin = () => {
+    Animated.sequence([
+      Animated.timing(pinShake, { toValue: 1, duration: 60, useNativeDriver: true }),
+      Animated.timing(pinShake, { toValue: -1, duration: 60, useNativeDriver: true }),
+      Animated.timing(pinShake, { toValue: 0.6, duration: 60, useNativeDriver: true }),
+      Animated.timing(pinShake, { toValue: 0, duration: 60, useNativeDriver: true }),
+    ]).start();
+  };
 
   const processingOpacity = processingPulse.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] });
   const processingScale = processingPulse.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1.06] });
@@ -144,7 +265,7 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
       });
       return;
     }
-    setPhase('processing');
+    setPhase('pin');
   };
 
   const renderRecipientSection = () => {
@@ -204,6 +325,74 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
     );
   };
 
+  if (phase === 'pin') {
+    const pinShakeX = pinShake.interpolate({
+      inputRange: [-1, 1],
+      outputRange: [-10, 10],
+    });
+    return (
+      <View style={styles.safeArea}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <View style={styles.topBar}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            activeOpacity={0.7}
+            onPress={() => {
+              setPin('');
+              setPhase('compose');
+            }}>
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.screenTitle}>Confirm Transfer</Text>
+          <View style={styles.iconButton} />
+        </View>
+
+        <View style={styles.pinWrap}>
+          <View style={styles.pinAmountRow}>
+            <Text style={styles.pinAmount}>{formatAmount(amount)}</Text>
+            <Text style={styles.pinTo}>to {selected?.name}</Text>
+          </View>
+
+          <Animated.View style={[styles.pinBoxes, { transform: [{ translateX: pinShakeX }] }]}>
+            {[0, 1, 2, 3].map((i) => (
+              <View
+                key={i}
+                style={[
+                  styles.pinBox,
+                  pin.length === i && styles.pinBoxActive,
+                  pin.length > i && styles.pinBoxFilled,
+                ]}>
+                {pin.length > i && <View style={styles.pinDot} />}
+              </View>
+            ))}
+          </Animated.View>
+
+          <TextInput
+            style={styles.pinHiddenInput}
+            value={pin}
+            onChangeText={(text) => setPin(text.replace(/[^0-9]/g, '').slice(0, 4))}
+            keyboardType="number-pad"
+            maxLength={4}
+            autoFocus
+          />
+
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => show({ message: 'PIN reset is coming soon. Demo PIN: any 4 digits.', variant: 'info' })}>
+            <Text style={styles.pinForgot}>Forgot PIN?</Text>
+          </TouchableOpacity>
+
+          <View style={styles.pinNoteRow}>
+            <HugeiconsIcon icon={Location01Icon} size={12} color={colors.textMuted} />
+            <Text style={styles.pinNote}>
+              Your PIN authorizes this transfer securely.
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   if (phase === 'processing') {
     return (
       <View style={styles.safeArea}>
@@ -231,24 +420,67 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
   }
 
   if (phase === 'success') {
+    const ringScale = splashRing.interpolate({ inputRange: [0, 1], outputRange: [1, 2.1] });
+    const ringOpacity = splashRing.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0.35, 0.3, 0] });
     return (
       <View style={styles.safeArea}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
-        <View style={styles.centerWrap}>
-          <Animated.View style={[styles.successIconWrap, { transform: [{ scale: successScale }] }]}>
-            <View style={styles.successGlow} />
-            <View style={styles.successIcon}>
-              <HugeiconsIcon icon={Tick02Icon} size={34} color="#FFFFFF" strokeWidth={3} />
+        <View style={[styles.splashOverlay, { backgroundColor: isDark ? 'rgba(3, 7, 18, 0.97)' : 'rgba(238, 243, 252, 0.98)' }]}>
+          {confetti.map((piece) => (
+            <ConfettiPiece key={piece.id} piece={piece} screenHeight={Dimensions.get('window').height} />
+          ))}
+
+          <Animated.View
+            style={[
+              styles.centerWrap,
+              { opacity: splashEntrance, transform: [{ translateY: splashEntrance.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] },
+            ]}>
+            <View style={styles.successIconWrap}>
+              <Animated.View
+                style={[styles.splashRing, styles.splashRingOuter, { transform: [{ scale: ringScale }], opacity: ringOpacity, borderColor: isDark ? '#4ADE80' : colors.success }]}
+                pointerEvents="none"
+              />
+              <Animated.View
+                style={[styles.splashRing, styles.splashRingInner, { transform: [{ scale: ringScale }], opacity: ringOpacity, borderColor: isDark ? '#4ADE80' : colors.success }]}
+                pointerEvents="none"
+              />
+              <Animated.View style={[styles.successIconWrap, { transform: [{ scale: successScale }] }]}>
+                <View style={[styles.successGlow, { backgroundColor: colors.success }]} />
+                <View style={[styles.successIcon, { backgroundColor: colors.success }]}>
+                  <HugeiconsIcon icon={Tick02Icon} size={38} color="#FFFFFF" strokeWidth={3} />
+                </View>
+              </Animated.View>
             </View>
+
+            <Text style={[styles.splashTitle, { color: colors.text }]}>Payment Sent!</Text>
+            <Text style={[styles.splashAmount, { color: colors.success }]}>{formatAmount(amount)}</Text>
+
+            <View style={[styles.splashReceipt, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <View style={styles.splashReceiptRow}>
+                <Text style={[styles.splashReceiptLabel, { color: colors.textMuted }]}>To</Text>
+                <Text style={[styles.splashReceiptValue, { color: colors.text }]}>{selected?.name}</Text>
+              </View>
+              <View style={styles.splashReceiptRow}>
+                <Text style={[styles.splashReceiptLabel, { color: colors.textMuted }]}>Status</Text>
+                <Text style={[styles.splashReceiptValue, { color: colors.success }]}>
+                  {selected?.online ? 'Delivered instantly' : 'Queued for merchant'}
+                </Text>
+              </View>
+              <View style={[styles.splashReceiptRow, styles.splashReceiptRowLast, { borderBottomColor: colors.divider }]}>
+                <Text style={[styles.splashReceiptLabel, { color: colors.textMuted }]}>Reference</Text>
+                <Text style={[styles.splashReceiptValue, { color: colors.text }]}>NBP-{Math.floor(100000 + Math.random() * 900000)}</Text>
+              </View>
+            </View>
+
+            <View style={styles.splashPointsRow}>
+              <HugeiconsIcon icon={Wallet03Icon} size={13} color={colors.success} />
+              <Text style={[styles.splashPointsText, { color: colors.success }]}>+ commission points earned on this transfer</Text>
+            </View>
+
+            <TouchableOpacity style={[styles.doneButton, { backgroundColor: colors.brand }]} activeOpacity={0.8} onPress={onClose}>
+              <Text style={styles.doneButtonText}>Done</Text>
+            </TouchableOpacity>
           </Animated.View>
-          <Text style={styles.successTitle}>Payment Sent!</Text>
-          <Text style={styles.successSubtitle}>
-            {formatAmount(amount)} sent to {selected?.name}. You earned
-            commission points on this transfer.
-          </Text>
-          <TouchableOpacity style={styles.doneButton} activeOpacity={0.8} onPress={onClose}>
-            <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -336,7 +568,7 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
         </ScrollView>
 
         {/* Fixed footer */}
-        <View style={styles.footerBar}>
+        <View style={[styles.footerBar, { paddingBottom: Math.max(insets.bottom, 24) }]}>
           <TouchableOpacity
             style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
             activeOpacity={0.85}
@@ -352,11 +584,14 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
       {showScanner && (
         <View style={styles.scannerOverlay}>
           <View style={[styles.scannerHeader, { paddingTop: 56 }]}>
-            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7} onPress={() => setShowScanner(false)}>
+            <TouchableOpacity
+              style={styles.scannerIconButton}
+              activeOpacity={0.7}
+              onPress={() => setShowScanner(false)}>
               <HugeiconsIcon icon={ArrowLeft01Icon} size={16} color="#FFFFFF" />
             </TouchableOpacity>
             <Text style={styles.scannerTitle}>Scan Merchant QR</Text>
-            <View style={styles.iconButton} />
+            <View style={styles.scannerIconButton} />
           </View>
 
           <View style={styles.scannerBody}>
@@ -736,6 +971,153 @@ const createStyles = (c: ThemeColors) =>
       fontSize: 14,
       color: '#FFFFFF',
     },
+    pinWrap: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 32,
+    },
+    pinAmountRow: {
+      alignItems: 'center',
+      marginBottom: 34,
+    },
+    pinAmount: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 30,
+      color: c.text,
+      letterSpacing: -1,
+    },
+    pinTo: {
+      fontFamily: 'Montserrat_500Medium',
+      fontSize: 12,
+      color: c.textMuted,
+      marginTop: 5,
+    },
+    pinBoxes: {
+      flexDirection: 'row',
+      gap: 14,
+    },
+    pinBox: {
+      width: 56,
+      height: 60,
+      borderRadius: 14,
+      borderWidth: 1.5,
+      borderColor: c.surfaceBorder,
+      backgroundColor: c.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pinBoxActive: {
+      borderColor: c.brand,
+      borderWidth: 2,
+    },
+    pinBoxFilled: {
+      borderColor: c.brand,
+      backgroundColor: c.background,
+    },
+    pinDot: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      backgroundColor: c.text,
+    },
+    pinHiddenInput: {
+      position: 'absolute',
+      width: 1,
+      height: 1,
+      opacity: 0,
+    },
+    pinForgot: {
+      fontFamily: 'Montserrat_600SemiBold',
+      fontSize: 12,
+      color: c.brand,
+      marginTop: 30,
+    },
+    pinNoteRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      marginTop: 16,
+    },
+    pinNote: {
+      fontFamily: 'Montserrat_400Regular',
+      fontSize: 10,
+      color: c.textMuted,
+    },
+    splashOverlay: {
+      ...StyleSheet.absoluteFill,
+      backgroundColor: 'rgba(3, 7, 18, 0.97)',
+      zIndex: 20,
+    },
+    splashRing: {
+      position: 'absolute',
+      borderRadius: 999,
+      borderWidth: 2,
+      borderColor: '#4ADE80',
+    },
+    splashRingOuter: {
+      width: 150,
+      height: 150,
+    },
+    splashRingInner: {
+      width: 120,
+      height: 120,
+    },
+    splashTitle: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 24,
+      color: '#FFFFFF',
+      letterSpacing: -0.5,
+      marginTop: 26,
+    },
+    splashAmount: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 40,
+      color: '#4ADE80',
+      letterSpacing: -1.5,
+      marginTop: 6,
+    },
+    splashReceipt: {
+      alignSelf: 'stretch',
+      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.12)',
+      paddingHorizontal: 16,
+      marginTop: 24,
+    },
+    splashReceiptRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    },
+    splashReceiptRowLast: {
+      borderBottomWidth: 0,
+    },
+    splashReceiptLabel: {
+      fontFamily: 'Montserrat_500Medium',
+      fontSize: 11,
+      color: 'rgba(255, 255, 255, 0.55)',
+    },
+    splashReceiptValue: {
+      fontFamily: 'Montserrat_600SemiBold',
+      fontSize: 12,
+      color: '#FFFFFF',
+    },
+    splashPointsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 14,
+    },
+    splashPointsText: {
+      fontFamily: 'Montserrat_500Medium',
+      fontSize: 11,
+      color: '#4ADE80',
+    },
     scannerOverlay: {
       ...StyleSheet.absoluteFill,
       backgroundColor: 'rgba(2, 6, 23, 0.94)',
@@ -752,6 +1134,16 @@ const createStyles = (c: ThemeColors) =>
       fontFamily: 'Montserrat_700Bold',
       fontSize: 15,
       color: '#FFFFFF',
+    },
+    scannerIconButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 12,
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.25)',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     scannerBody: {
       flex: 1,

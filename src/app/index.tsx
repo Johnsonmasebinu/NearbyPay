@@ -37,6 +37,7 @@ import WalletScreen from '@/components/wallet-screen';
 import ProfileScreen from '@/components/profile-screen';
 import SendScreen from '@/components/send-screen';
 import ReceiveScreen from '@/components/receive-screen';
+import MoreScreen from '@/components/more-screen';
 import { useAppTheme } from '@/hooks/theme-provider';
 import { Colors, type ThemeColors } from '@/constants/theme';
 
@@ -157,7 +158,7 @@ export default function HomeScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>('home');
-  const [overlay, setOverlay] = useState<'send' | 'receive' | null>(null);  const [starPositions, setStarPositions] = useState<StarSpec[]>([]);
+  const [overlay, setOverlay] = useState<'send' | 'receive' | 'more' | null>(null);  const [starPositions, setStarPositions] = useState<StarSpec[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = () => {
@@ -192,6 +193,10 @@ export default function HomeScreen() {
     }
     if (action === 'History') {
       setActiveTab('history');
+      return;
+    }
+    if (action === 'More') {
+      setOverlay('more');
       return;
     }
     show({
@@ -475,6 +480,11 @@ export default function HomeScreen() {
         {overlay === 'receive' && (
           <View style={StyleSheet.absoluteFill}>
             <ReceiveScreen onClose={() => setOverlay(null)} />
+          </View>
+        )}
+        {overlay === 'more' && (
+          <View style={StyleSheet.absoluteFill}>
+            <MoreScreen onClose={() => setOverlay(null)} />
           </View>
         )}
       </View>
