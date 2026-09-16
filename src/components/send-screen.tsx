@@ -1,6 +1,7 @@
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  Delete02Icon,
   Location01Icon,
   ScanIcon,
   Tick02Icon,
@@ -367,14 +368,30 @@ export default function SendScreen({ onClose }: { onClose: () => void }) {
             ))}
           </Animated.View>
 
-          <TextInput
-            style={styles.pinHiddenInput}
-            value={pin}
-            onChangeText={(text) => setPin(text.replace(/[^0-9]/g, '').slice(0, 4))}
-            keyboardType="number-pad"
-            maxLength={4}
-            autoFocus
-          />
+          <View style={styles.pinPad}>
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+              <TouchableOpacity
+                key={digit}
+                style={styles.pinKey}
+                activeOpacity={0.6}
+                onPress={() => setPin((prev) => (prev.length < 4 ? prev + digit : prev))}>
+                <Text style={styles.pinKeyText}>{digit}</Text>
+              </TouchableOpacity>
+            ))}
+            <View style={styles.pinKey} />
+            <TouchableOpacity
+              style={styles.pinKey}
+              activeOpacity={0.6}
+              onPress={() => setPin((prev) => (prev.length < 4 ? prev + '0' : prev))}>
+              <Text style={styles.pinKeyText}>0</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.pinKey}
+              activeOpacity={0.6}
+              onPress={() => setPin((prev) => prev.slice(0, -1))}>
+              <HugeiconsIcon icon={Delete02Icon} size={20} color={colors.text} />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             activeOpacity={0.7}
@@ -1021,11 +1038,28 @@ const createStyles = (c: ThemeColors) =>
       borderRadius: 7,
       backgroundColor: c.text,
     },
-    pinHiddenInput: {
-      position: 'absolute',
-      width: 1,
-      height: 1,
-      opacity: 0,
+    pinPad: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: 10,
+      marginTop: 28,
+      width: 260,
+    },
+    pinKey: {
+      width: 80,
+      height: 54,
+      borderRadius: 14,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.surfaceBorder,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pinKeyText: {
+      fontFamily: 'Montserrat_600SemiBold',
+      fontSize: 19,
+      color: c.text,
     },
     pinForgot: {
       fontFamily: 'Montserrat_600SemiBold',

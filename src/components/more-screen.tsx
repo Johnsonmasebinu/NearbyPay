@@ -1,7 +1,7 @@
 import {
   ArrowLeft01Icon,
-  ArrowRight01Icon,
-  FlashIcon,
+  Notification03Icon,
+  BulbIcon,
   SmartPhone01Icon,
   Tv01Icon,
   WifiIcon,
@@ -26,7 +26,7 @@ import { useToast } from '@/components/ui/toast';
 const BILL_SERVICES = [
   { id: 'airtime', label: 'Airtime', description: 'Top up any network', icon: SmartPhone01Icon },
   { id: 'data', label: 'Data', description: 'Buy data bundles', icon: WifiIcon },
-  { id: 'light', label: 'Light', description: 'Pay electricity bills', icon: FlashIcon },
+  { id: 'light', label: 'Light', description: 'Pay electricity bills', icon: BulbIcon },
   { id: 'tv', label: 'TV', description: 'Cable subscriptions', icon: Tv01Icon },
 ];
 
@@ -70,7 +70,12 @@ export default function MoreScreen({ onClose }: { onClose: () => void }) {
             <HugeiconsIcon icon={ArrowLeft01Icon} size={16} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.screenTitle}>More</Text>
-          <View style={styles.iconButton} />
+          <TouchableOpacity
+            style={styles.iconButton}
+            activeOpacity={0.7}
+            onPress={() => show({ message: 'You have no new notifications.', variant: 'info' })}>
+            <HugeiconsIcon icon={Notification03Icon} size={15} color={colors.text} />
+          </TouchableOpacity>
         </View>
 
         <Animated.View
@@ -104,17 +109,6 @@ export default function MoreScreen({ onClose }: { onClose: () => void }) {
                   {service.description}
                 </Text>
               </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={styles.sectionTitle}>Coming soon</Text>
-          <View style={styles.comingSoonCard}>
-            {['Betting', 'Transport', 'Education', 'Insurance'].map((item) => (
-              <View key={item} style={styles.comingSoonRow}>
-                <View style={styles.comingSoonDot} />
-                <Text style={styles.comingSoonText}>{item}</Text>
-                <HugeiconsIcon icon={ArrowRight01Icon} size={13} color={colors.navIcon} />
-              </View>
             ))}
           </View>
         </Animated.View>
@@ -201,33 +195,5 @@ const createStyles = (c: ThemeColors) =>
       fontSize: 10,
       color: c.textMuted,
       lineHeight: 14,
-    },
-    comingSoonCard: {
-      backgroundColor: c.surface,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: c.surfaceBorder,
-      paddingHorizontal: 14,
-    },
-    comingSoonRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      paddingVertical: 13,
-      borderBottomWidth: 1,
-      borderBottomColor: c.divider,
-    },
-    comingSoonDot: {
-      width: 7,
-      height: 7,
-      borderRadius: 4,
-      backgroundColor: c.textMuted,
-      opacity: 0.4,
-    },
-    comingSoonText: {
-      flex: 1,
-      fontFamily: 'Montserrat_600SemiBold',
-      fontSize: 13,
-      color: c.textMuted,
     },
   });
